@@ -1,7 +1,20 @@
 #include <iostream>
+#include <fstream>
 
-int main(int argc, char **argv)
+#include "../include/facts.h"
+#include "../include/utils.h"
+#include "../include/gameboard.h"
+
+int main()
 {
-    std::cout << argc << std::endl;
-    std::cout << argv[0] << std::endl;
+    std::string input;
+
+    color color_of_actor = read_color_from_stream(std::cin);
+
+    std::cout << "color_of_actor: " << color_of_actor << std::endl;
+
+    gameboard *gameboard_instance = gameboard::generate_from_stream(std::cin);
+
+    std::cout << "gameboard_instance: " << std::endl
+              << *gameboard_instance << std::endl;
 }
