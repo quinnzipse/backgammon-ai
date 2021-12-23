@@ -12,9 +12,7 @@ game_state *game_state::generate_from_stream(std::istream &input_stream)
     int number_of_dice_rolls = read_next_int_from_stream(std::cin);
 
     for (int i = 0; i < number_of_dice_rolls; i++)
-    {
         int dice_roll = read_next_int_from_stream(std::cin);
-    }
 }
 
 std::vector<int> *read_die_rolls(std::istream &input_stream)
