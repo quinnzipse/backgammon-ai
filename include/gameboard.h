@@ -9,6 +9,9 @@ class gameboard
 {
 private:
     point points[NUMBER_OF_POINTS];
+    int white_checkers_on_bar;
+    int black_checkers_on_bar;
+    
     gameboard();
     // Need to figure out how to represent the bar and the home
 

@@ -1,23 +1,15 @@
 #include <iostream>
 #include <fstream>
 
-#include "../include/facts.h"
-#include "../include/utils.h"
-#include "../include/gameboard.h"
+#include "../include/game_state.h"
 
 int main()
 {
-    std::cout << "color_of_actor: " << (color_of_actor == color::white ? "White" : "Black") << std::endl
-              << std::endl;
+    std::istream *input_stream = new std::ifstream("test_input.txt");
 
-    std::cout << "gameboard_instance: " << std::endl
-              << *gameboard_instance << std::endl;
+    game_state *game_state_instance = game_state::generate_from_stream(*input_stream);
 
-    std::cout << "number_of_white_checkers_on_bar: " << number_of_white_checkers_on_bar << std::endl
-              << "number_of_black_checkers_on_bar: " << number_of_black_checkers_on_bar << std::endl
-              << std::endl;
-
-    std::cout << "number_of_dice_rolls: " << number_of_dice_rolls << std::endl;
+    std::cout << *game_state_instance;
 
     // TODO: need to use alpha beta pruning to find the next move.
 }

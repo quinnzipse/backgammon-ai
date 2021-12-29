@@ -2,17 +2,13 @@
 
 game_state *game_state::generate_from_stream(std::istream &input_stream)
 {
-    color color_of_actor = read_color_from_stream(input_stream);
-    gameboard *gameboard_instance = gameboard::generate_from_stream(input_stream);
+    game_state *game_state_instance = new game_state();
 
-    // TODO: This should be a part of the gameboard class.
-    int number_of_white_checkers_on_bar = read_next_int_from_stream(input_stream);
-    int number_of_black_checkers_on_bar = read_next_int_from_stream(input_stream);
+    game_state_instance->color_of_actor = read_color_from_stream(input_stream);
+    game_state_instance->gameboard_instance = gameboard::generate_from_stream(input_stream);
+    game_state_instance->die_rolls = dice::generate_from_stream(input_stream);
 
-    int number_of_dice_rolls = read_next_int_from_stream(std::cin);
-
-    for (int i = 0; i < number_of_dice_rolls; i++)
-        int dice_roll = read_next_int_from_stream(std::cin);
+    return game_state_instance;
 }
 
 std::vector<int> *read_die_rolls(std::istream &input_stream)
@@ -28,4 +24,12 @@ std::vector<int> *read_die_rolls(std::istream &input_stream)
     }
 
     return die_rolls;
+}
+
+std::ostream &operator<<(std::ostream &output_stream, game_state &game_state_instance)
+{
+    return output_stream << std::endl
+                         << (game_state_instance.color_of_actor == 1 ? "White" : "Black") << " is next to move." << std::endl
+                         << *game_state_instance.gameboard_instance << std::endl
+                         << *game_state_instance.die_rolls << std::endl;
 }
