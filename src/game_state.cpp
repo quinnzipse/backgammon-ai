@@ -26,6 +26,16 @@ std::vector<int> *read_die_rolls(std::istream &input_stream)
     return die_rolls;
 }
 
+std::vector<game_state *> *game_state::generate_possible_next_states()
+{
+    return this->gameboard_instance->generate_possible_next_states();
+}
+
+bool game_state::is_game_over()
+{
+    return gameboard_instance->is_game_over();
+}
+
 std::ostream &operator<<(std::ostream &output_stream, game_state &game_state_instance)
 {
     return output_stream << std::endl

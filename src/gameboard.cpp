@@ -13,6 +13,11 @@ gameboard *gameboard::generate_from_stream(std::istream &input_stream)
     return gameboard_instance;
 }
 
+bool gameboard::is_game_over()
+{
+    return white_checkers_on_bar >= NUMBER_OF_COLOR_CHECKERS || black_checkers_on_bar >= NUMBER_OF_COLOR_CHECKERS;
+}
+
 gameboard::gameboard() {}
 
 std::ostream &operator<<(std::ostream &output_stream, gameboard &gameboard_instance)
