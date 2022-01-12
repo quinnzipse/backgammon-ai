@@ -1,16 +1,22 @@
 #include "../include/gameboard.h"
 
+gameboard::gameboard(std::vector<point> &points, int white_checkers_on_bar, int black_checkers_on_bar)
+    : points(points), white_checkers_on_bar(white_checkers_on_bar), black_checkers_on_bar(black_checkers_on_bar)
+{
+}
+
 gameboard *gameboard::generate_from_stream(std::istream &input_stream)
 {
-    gameboard *gameboard_instance = new gameboard();
+    std::vector<point> points;
+    points.reserve(NUMBER_OF_POINTS);
 
     for (int i = 0; i < NUMBER_OF_POINTS; i++)
-        gameboard_instance->points[i] = point::generate_from_stream(input_stream);
+        points[i].fill_from_stream(input_stream);
 
-    gameboard_instance->white_checkers_on_bar = read_next_int_from_stream(input_stream);
-    gameboard_instance->black_checkers_on_bar = read_next_int_from_stream(input_stream);
+    int white_checkers_on_bar = read_next_int_from_stream(input_stream);
+    int black_checkers_on_bar = read_next_int_from_stream(input_stream);
 
-    return gameboard_instance;
+    return new gameboard(points, white_checkers_on_bar, black_checkers_on_bar);
 }
 
 bool gameboard::is_game_over()

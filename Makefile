@@ -2,7 +2,7 @@ PROGRAM_NAME = "backgammon-ai"
 
 # Compiler Options
 CC=g++
-CFLAGS=-Wall -Wextra -Werror -g -std=c++14
+CFLAGS=-Wall -Wextra -Werror -g -std=c++20
 
 # Folders
 SRC=src

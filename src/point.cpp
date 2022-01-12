@@ -1,11 +1,9 @@
 #include "../include/point.h"
 
-point point::generate_from_stream(std::istream &input_stream)
+void point::fill_from_stream(std::istream &input_stream)
 {
-    int number_of_checkers = read_next_int_from_stream(input_stream);
-    color color_of_checkers = number_of_checkers == 0 ? color::none : read_color_from_stream(input_stream);
-
-    return point(number_of_checkers, color_of_checkers);
+    this->number_of_checkers = read_next_int_from_stream(input_stream);
+    this->color_of_checkers = number_of_checkers == 0 ? color::none : read_color_from_stream(input_stream);
 }
 
 bool point::is_open(color color_of_actor)
@@ -15,11 +13,6 @@ bool point::is_open(color color_of_actor)
 
 point::point()
     : number_of_checkers(0), color_of_checkers(color::none)
-{
-}
-
-point::point(int number_of_checkers, color color_of_checkers)
-    : number_of_checkers(number_of_checkers), color_of_checkers(color_of_checkers)
 {
 }
 
