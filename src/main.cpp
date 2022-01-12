@@ -6,9 +6,10 @@
 
 int main()
 {
-    std::istream *input_stream = new std::ifstream("test_input.txt");
+    std::ifstream file_stream("test_input.txt");
+    std::istream &input_stream = file_stream;
 
-    game_state *game_state_instance = game_state::generate_from_stream(*input_stream);
+    std::shared_ptr<game_state> game_state_instance = game_state::generate_from_stream(input_stream);
 
     std::cout << *game_state_instance;
 
@@ -53,7 +54,6 @@ const std::pair<int, action> find_max_move(game_state *game_state_instance, int 
             return max_value_move;
     }
 
-    free next_possible_states;
     // Return the max value and the action.
 }
 

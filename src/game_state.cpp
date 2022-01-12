@@ -11,9 +11,9 @@ std::shared_ptr<game_state> game_state::generate_from_stream(std::istream &input
     return game_state_instance;
 }
 
-std::vector<int> *read_die_rolls(std::istream &input_stream)
+std::shared_ptr<std::vector<int>> read_die_rolls(std::istream &input_stream)
 {
-    std::vector<int> *die_rolls = new std::vector<int>();
+    std::shared_ptr<std::vector<int>> die_rolls = std::make_shared<std::vector<int>>();
 
     int number_of_dice_rolls = read_next_int_from_stream(input_stream);
 
