@@ -14,15 +14,13 @@ bool point::is_open(color color_of_actor)
 }
 
 point::point()
+    : number_of_checkers(0), color_of_checkers(color::none)
 {
-    number_of_checkers = 0;
-    color_of_checkers = color::none;
 }
 
 point::point(int number_of_checkers, color color_of_checkers)
+    : number_of_checkers(number_of_checkers), color_of_checkers(color_of_checkers)
 {
-    this->number_of_checkers = number_of_checkers;
-    this->color_of_checkers = color_of_checkers;
 }
 
 std::ostream &operator<<(std::ostream &output_stream, point &point_instance)

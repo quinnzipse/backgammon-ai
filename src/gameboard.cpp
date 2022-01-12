@@ -18,8 +18,6 @@ bool gameboard::is_game_over()
     return white_checkers_on_bar >= NUMBER_OF_COLOR_CHECKERS || black_checkers_on_bar >= NUMBER_OF_COLOR_CHECKERS;
 }
 
-gameboard::gameboard() {}
-
 std::ostream &operator<<(std::ostream &output_stream, gameboard &gameboard_instance)
 {
     for (int i = 0; i < NUMBER_OF_POINTS; i++)

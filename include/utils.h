@@ -3,7 +3,13 @@
 #include <istream>
 #include <string>
 
-#include "facts.h"
+
+enum color
+{
+    none = 0,
+    white = 1,
+    black = 2
+};
 
 color read_color_from_stream(std::istream &input_stream);
 

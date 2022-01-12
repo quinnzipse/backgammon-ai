@@ -15,11 +15,19 @@ private:
     int white_checkers_on_bar;
     int black_checkers_on_bar;
 
-    gameboard();
+    gameboard() = default;
 
 public:
+    ~gameboard() = default;
+
+    gameboard(const gameboard &) = delete;
+    gameboard &operator= (const gameboard &) = delete;
+    gameboard(gameboard &&) = delete;
+    gameboard &operator= (gameboard &&) = delete;
+
     bool is_game_over();
     std::vector<game_state *> *generate_possible_next_states();
     static gameboard *generate_from_stream(std::istream &);
+    
     friend std::ostream &operator<<(std::ostream &, gameboard &);
 };
