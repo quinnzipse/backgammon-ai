@@ -5,7 +5,13 @@ gameboard::gameboard(std::vector<point> &points, int white_checkers_on_bar, int 
 {
 }
 
-gameboard *gameboard::generate_from_stream(std::istream &input_stream)
+std::shared_ptr<std::vector<gameboard *>> gameboard::generate_possible_next_states()
+{
+    // TODO: This is probably pointless
+    return std::make_shared<std::vector<gameboard *>>();
+}
+
+std::shared_ptr<gameboard> gameboard::generate_from_stream(std::istream &input_stream)
 {
     std::vector<point> points;
     points.reserve(NUMBER_OF_POINTS);
@@ -16,7 +22,7 @@ gameboard *gameboard::generate_from_stream(std::istream &input_stream)
     int white_checkers_on_bar = read_next_int_from_stream(input_stream);
     int black_checkers_on_bar = read_next_int_from_stream(input_stream);
 
-    return new gameboard(points, white_checkers_on_bar, black_checkers_on_bar);
+    return std::make_shared<gameboard>(points, white_checkers_on_bar, black_checkers_on_bar);
 }
 
 bool gameboard::is_game_over()

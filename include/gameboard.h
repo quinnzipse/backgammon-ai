@@ -2,6 +2,7 @@
 
 #include <istream>
 #include <vector>
+#include <memory>
 
 #include "point.h"
 #include "game_state.h"
@@ -27,8 +28,8 @@ public:
     gameboard &operator=(gameboard &&) = delete;
 
     bool is_game_over();
-    std::vector<game_state *> *generate_possible_next_states();
-    static gameboard *generate_from_stream(std::istream &);
+    std::shared_ptr<std::vector<gameboard *>> generate_possible_next_states();
+    static std::shared_ptr<gameboard> generate_from_stream(std::istream &);
 
     friend std::ostream &operator<<(std::ostream &, gameboard &);
 };

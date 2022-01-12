@@ -2,9 +2,9 @@
 
 // TODO: This is misleading. The dice class should be renamed to moves because it is not representing dice but the moves that the dice rolls indicate.
 
-dice *dice::generate_from_stream(std::istream &stream)
+std::shared_ptr<dice> dice::generate_from_stream(std::istream &stream)
 {
-    dice *dice_instance = new dice();
+    std::shared_ptr<dice> dice_instance = std::make_shared<dice>();
 
     int number_of_dice_rolls = read_next_int_from_stream(stream);
 

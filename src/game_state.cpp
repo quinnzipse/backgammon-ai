@@ -1,8 +1,8 @@
 #include "../include/game_state.h"
 
-game_state *game_state::generate_from_stream(std::istream &input_stream)
+std::shared_ptr<game_state> game_state::generate_from_stream(std::istream &input_stream)
 {
-    game_state *game_state_instance = new game_state();
+    std::shared_ptr<game_state> game_state_instance = std::make_shared<game_state>();
 
     game_state_instance->color_of_actor = read_color_from_stream(input_stream);
     game_state_instance->gameboard_instance = gameboard::generate_from_stream(input_stream);
@@ -26,9 +26,10 @@ std::vector<int> *read_die_rolls(std::istream &input_stream)
     return die_rolls;
 }
 
-std::vector<game_state *> *game_state::generate_possible_next_states()
+std::shared_ptr<std::vector<game_state *>> game_state::generate_possible_next_states()
 {
-    return this->gameboard_instance->generate_possible_next_states();
+    // TODO: This is messed up.
+    return std::make_shared<std::vector<game_state *>>();
 }
 
 bool game_state::is_game_over()
