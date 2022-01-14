@@ -89,36 +89,10 @@ public:
     }
 };
 
-int main()
-{
-    std::ifstream input_stream("test_input.txt");
-
-    // Read in an input file
-    int color_of_actor = read_next_int_from_stream(input_stream);
-
-    state game_state;
-    state::read_from_stream(input_stream, game_state);
-
-    // Verify by printing it out.
-    std::cout << "Read in:" << std::endl
-              << color_of_actor << std::endl
-              << game_state;
-
-    if (color_of_actor == 1)
-    {
-        // Call max
-    }
-    else
-    {
-        // call min
-    }
-}
-
 int max(state s, int alpha, int beta)
 {
-    std::cout << s << alpha << beta << std::endl;
-
     // Actor "1" will always be moving
+    std::cout << s << alpha << beta << std::endl;
 
     // If game is over, return the utility for the current player and null as action.
     if (s.game_over())
@@ -134,19 +108,20 @@ int max(state s, int alpha, int beta)
         // Find the min value of that state.
         // If the min value is greater than the max value, update the max value.
         // If the min value is more than beta, return immediately.
-        // Return the max value and the action.
     }
 
+    // Return the max value and the action.
     return -1;
 }
 
 int min(state s, int alpha, int beta)
 {
+    // Actor "2" will always be moving
     std::cout << s << alpha << beta << std::endl;
 
-    // Actor "2" will always be moving
-
     // If game is over, return the utility for the current player and null as action.
+    if (s.game_over())
+        return s.utility(); // TODO: Might need to multiply this by the depth.
 
     // If game is not over, return the min of the max of the next moves.
     // for every possible action, find the max of the next moves.
@@ -160,4 +135,29 @@ int min(state s, int alpha, int beta)
 
     // Return the min value and the action.
     return -1;
+}
+
+int main()
+{
+    std::ifstream input_stream("test_input_1.txt");
+
+    // Read in an input file
+    int color_of_actor = read_next_int_from_stream(input_stream);
+
+    state game_state;
+    state::read_from_stream(input_stream, game_state);
+
+    // Verify by printing it out.
+    std::cout << "Read in:" << std::endl
+              << color_of_actor << std::endl
+              << game_state << std::endl;
+
+    int utility;
+
+    if (color_of_actor == 1)
+        utility = max(game_state, -100000, 100000);
+    else
+        utility = min(game_state, -100000, 100000);
+
+    std::cout << "Best Outcome: " << utility << std::endl;
 }
