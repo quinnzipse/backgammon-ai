@@ -14,11 +14,10 @@ public:
     point();
 
     ~point() = default;
-
-    point(const point &) = delete;
-    point &operator=(const point &) = delete;
-    point(point &&) = delete;
-    point &operator=(point &&) = delete;
+    point(const point &) = default;
+    point &operator=(const point &) = default;
+    point(point &&) = default;
+    point &operator=(point &&) = default;
 
     bool is_open(color);
     void fill_from_stream(std::istream &);

@@ -44,3 +44,8 @@ std::ostream &operator<<(std::ostream &output_stream, game_state &game_state_ins
                          << *game_state_instance.gameboard_instance << std::endl
                          << *game_state_instance.die_rolls << std::endl;
 }
+
+int game_state::utility()
+{
+    return 0;
+}

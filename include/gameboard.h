@@ -5,23 +5,23 @@
 #include <memory>
 
 #include "point.h"
-#include "game_state.h"
 
-const int NUMBER_OF_POINTS = 26;
+const size_t NUMBER_OF_POINTS = 26;
 const int NUMBER_OF_COLOR_CHECKERS = 15;
+
 class gameboard
 {
 private:
-    std::vector<point> points;
+    std::shared_ptr<std::vector<point>> points;
     int white_checkers_on_bar;
     int black_checkers_on_bar;
 
-    gameboard() = delete;
-    gameboard(std::vector<point> &, int, int);
-
 public:
+    gameboard(std::shared_ptr<std::vector<point>> , int, int);
+
     ~gameboard() = default;
 
+    gameboard() = delete;
     gameboard(const gameboard &) = delete;
     gameboard &operator=(const gameboard &) = delete;
     gameboard(gameboard &&) = delete;
