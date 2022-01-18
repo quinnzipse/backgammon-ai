@@ -1,7 +1,13 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <cassert>
 
+// In the test files the colors (aka actors) are 1 indexed.
+const enum ACTOR { WHITE = 0,
+                   BLACK = 1 };
+
+const int NUMBER_OF_PLAYERS = 2;
 const int BLACK_BEAR_OFF_INDEX = 0;
 const int WHITE_BEAR_OFF_INDEX = 25;
 const int NUMBER_OF_POINTS = 26;
@@ -24,9 +30,16 @@ class state
 public:
     std::vector<std::pair<int, int>> board;
     std::vector<int> dice_rolls;
-    int white_checkers_on_bar, black_checkers_on_bar;
+    std::vector<int> checkers_on_bar;
 
     state() = default;
+
+    state(const state &s1)
+    {
+        board = s1.board;
+        dice_rolls = s1.dice_rolls;
+        checkers_on_bar = s1.checkers_on_bar;
+    }
 
     bool game_over() const
     {
@@ -47,8 +60,8 @@ public:
             std::cout << point.first << " " << point.second << std::endl;
         }
 
-        std::cout << state.white_checkers_on_bar << std::endl
-                  << state.black_checkers_on_bar << std::endl;
+        std::cout << state.checkers_on_bar[ACTOR::WHITE] << std::endl
+                  << state.checkers_on_bar[ACTOR::BLACK] << std::endl;
 
         std::cout << state.dice_rolls.size() << std::endl;
 
@@ -77,8 +90,9 @@ public:
             }
         }
 
-        output_state.white_checkers_on_bar = read_next_int_from_stream(input_stream),
-        output_state.black_checkers_on_bar = read_next_int_from_stream(input_stream);
+        output_state.checkers_on_bar.reserve(NUMBER_OF_PLAYERS);
+        output_state.checkers_on_bar.emplace_back(read_next_int_from_stream(input_stream));
+        output_state.checkers_on_bar.emplace_back(read_next_int_from_stream(input_stream));
 
         int number_of_dice_rolls = read_next_int_from_stream(input_stream);
 
@@ -87,18 +101,31 @@ public:
         for (int i = 0; i < number_of_dice_rolls; i++)
             output_state.dice_rolls.emplace_back(read_next_int_from_stream(input_stream));
     }
+
+    void generate_all_possible_moves(int actor)
+    {
+        bool actor_is_valid = (actor == ACTOR::WHITE || actor == ACTOR::BLACK);
+        assert(actor_is_valid);
+
+        if (this->checkers_on_bar[actor] != 0)
+        {
+            int base_index = (actor == ACTOR::WHITE ? WHITE_BEAR_OFF_INDEX : BLACK_BEAR_OFF_INDEX);
+            int multiplier = (actor == ACTOR::WHITE ? 1 : -1);
+            
+        }
+    }
 };
 
 int max(state s, int alpha, int beta)
 {
-    // Actor "1" will always be moving
+    // Actor WHITE will always be moving
     std::cout << s << alpha << beta << std::endl;
 
     // If game is over, return the utility for the current player and null as action.
     if (s.game_over())
         return s.utility(); // TODO: Might need to multiply this by the depth.
 
-    // std::pair<int, action> max_value_move = std::make_pair(-1000000, action());
+    std::pair<int, action> max_value_move = std::make_pair(-1000000, action());
 
     // Generate all possible moves.
 
@@ -116,7 +143,7 @@ int max(state s, int alpha, int beta)
 
 int min(state s, int alpha, int beta)
 {
-    // Actor "2" will always be moving
+    // Actor BLACK will always be moving
     std::cout << s << alpha << beta << std::endl;
 
     // If game is over, return the utility for the current player and null as action.
