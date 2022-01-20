@@ -102,17 +102,30 @@ public:
             output_state.dice_rolls.emplace_back(read_next_int_from_stream(input_stream));
     }
 
-    void generate_all_possible_moves(int actor)
+    void generate_all_moves_for_white() const
     {
-        bool actor_is_valid = (actor == ACTOR::WHITE || actor == ACTOR::BLACK);
-        assert(actor_is_valid);
+        std::vector<std::pair<int, int>> moves;
+        std::vector<int> dice_rolls = this->dice_rolls;
 
-        if (this->checkers_on_bar[actor] != 0)
+        while (dice_rolls.size() > 0)
         {
-            int base_index = (actor == ACTOR::WHITE ? WHITE_BEAR_OFF_INDEX : BLACK_BEAR_OFF_INDEX);
-            int multiplier = (actor == ACTOR::WHITE ? 1 : -1);
-            
+            if (checkers_on_bar[ACTOR::WHITE] != 0)
+            {
+                // get the bar move
+                // check to see if it could move
+                
+            }
+            else
+            {
+
+            }
         }
+    }
+
+    // TODO: Does not recognize the constraints of bearing off.
+    bool is_open(const int location, const ACTOR actor) const
+    {
+        return board[location].first <= 1 || board[location].second == actor;
     }
 };
 
