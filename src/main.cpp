@@ -4,9 +4,12 @@
 #include <cassert>
 
 // In the test files the colors (aka actors) are 1 indexed.
-const enum ACTOR { NONE = 0,
-                   WHITE = 1,
-                   BLACK = 2 };
+enum ACTOR
+{
+    NONE = 0,
+    WHITE = 1,
+    BLACK = 2
+};
 
 const int NUMBER_OF_PLAYERS = 2;
 const int BLACK_BEAR_OFF_INDEX = 0;
@@ -143,9 +146,42 @@ public:
             output_state.dice_rolls.emplace_back(read_next_int_from_stream(input_stream));
     }
 
-    // TODO: Does not recognize the constraints of bearing off.
     bool is_open(const int location, const ACTOR actor) const
     {
+        // Check if the location is valid.
+        if (location < 0 || location >= NUMBER_OF_POINTS)
+            return false;
+
+        // Check if they are all in the home quad.
+        if (location == NUMBER_OF_POINTS - 1)
+        {
+            if (actor == ACTOR::WHITE)
+            {
+                for (int i = 0; i < 19; i++)
+                    if (board[i].second == ACTOR::WHITE)
+                        return false;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        // Check if they are all in the home quad.
+        if (location == 0)
+        {
+            if (actor == ACTOR::BLACK)
+            {
+                for (int i = NUMBER_OF_POINTS - 1; i > 5; i--)
+                    if (board[i].second == ACTOR::BLACK)
+                        return false;
+
+                return true;
+            }
+
+            return false;
+        }
+
         return board[location].first <= 1 || board[location].second == actor;
     }
 };
@@ -161,18 +197,14 @@ public:
 
     bool has_next_roll()
     {
-        return dice_index != 35;
+        return dice_index < (6 * 6);
     }
 
     std::pair<int, int> next_dice_roll()
     {
         std::pair<int, int> next_roll = std::make_pair<int, int>(0, 0);
 
-        if (dice_index == 35)
-        {
-            dice_index = 0;
-            return next_roll;
-        }
+        assert(dice_index < 36);
 
         next_roll.first = (dice_index / 6) + 1;
         next_roll.second = (dice_index % 6) + 1;
@@ -183,6 +215,7 @@ public:
     }
 };
 
+// TODO: Does not understand rules associated with rolling doubles.
 class moves
 {
     int move_index;
@@ -196,7 +229,7 @@ public:
     {
         if (actor == ACTOR::BLACK)
         {
-            move_index = NUMBER_OF_POINTS;
+            move_index = NUMBER_OF_POINTS - 1; // FIXME: Might need to be -1...
             move_step = -1;
         }
     }
@@ -211,16 +244,18 @@ public:
     {
         std::pair<int, int> next_move = std::make_pair<int, int>(-1, -1);
 
+        assert(0 <= move_index && move_index <= NUMBER_OF_POINTS);
+
         // Find the next move.
         while (0 <= move_index && move_index <= NUMBER_OF_POINTS)
         {
-            int move_to_index = move_index + (move_step * spaces_to_move);
+            int to = move_index + (move_step * spaces_to_move);
 
             if (s.board[move_index].second == actor &&
-                s.is_open(move_to_index, actor))
+                s.is_open(to, actor))
             {
                 next_move.first = move_index;
-                next_move.second = move_to_index;
+                next_move.second = to;
 
                 break;
             }
@@ -234,10 +269,12 @@ public:
     }
 };
 
+int min(state s, int alpha, int beta);
+
 int max(state s, int alpha, int beta)
 {
     // Actor WHITE will always be moving
-    std::cout << s << alpha << beta << std::endl;
+    // std::cout << s << alpha << beta << std::endl;
 
     // If game is over, return the utility for the current player and null as action.
     if (s.game_over())
@@ -275,6 +312,9 @@ int max(state s, int alpha, int beta)
                 state next_state = state(intermediate_state);
                 next_state.update_state(move2.first, move2.second);
 
+                // std::cout << "Move: ( " << move.first << " -> " << move.second << " ) " << std::endl
+                        //   << " ( " << move2.first << " -> " << move2.second << " ) " << std::endl;
+
                 // Find the min value of that state.
                 int value = min(next_state, alpha, beta);
 
@@ -300,7 +340,7 @@ int max(state s, int alpha, int beta)
 
         // Can add a check to see if roll.first == roll.second (Swapping order wouldn't matter)
 
-        m = moves(roll.second, ACTOR::WHITE, s);
+        moves m1 = moves(roll.second, ACTOR::WHITE, s);
         while (m.has_next_move())
         {
             std::pair<int, int> move = m.next_move();
@@ -352,8 +392,11 @@ int max(state s, int alpha, int beta)
 
 int min(state s, int alpha, int beta)
 {
+    return -1;
+
     // Actor BLACK will always be moving
-    std::cout << s << alpha << beta << std::endl;
+    std::cout << "MIN:" << std::endl
+              << s << alpha << beta << std::endl;
 
     // If game is over, return the utility for the current player and null as action.
     if (s.game_over())
@@ -415,10 +458,10 @@ int min(state s, int alpha, int beta)
 
         // Can add a check to see if roll.first == roll.second (Swapping order wouldn't matter)
 
-        m = moves(roll.first, ACTOR::BLACK, s);
-        while (m.has_next_move())
+        moves m1 = moves(roll.first, ACTOR::BLACK, s);
+        while (m1.has_next_move())
         {
-            std::pair<int, int> move = m.next_move();
+            std::pair<int, int> move = m1.next_move();
             if (move.first == -1)
                 continue;
 
