@@ -32,6 +32,33 @@ std::shared_ptr<std::vector<game_state *>> game_state::generate_possible_next_st
     return std::make_shared<std::vector<game_state *>>();
 }
 
+int roll_index = 0;
+int checker_index = 0;
+
+std::pair<int, int> next_dice_roll(){ 
+    if(roll_index == 36){
+        roll_index = 0;
+        return std::make_pair<>(0, 0);
+    }
+    
+    std::pair<int, int> dice_rolls;
+
+    dice_rolls.first = (roll_index / 6) + 1;
+    dice_rolls.second = (roll_index % 6) + 1;
+
+    roll_index++;
+
+    return dice_rolls;
+}
+
+std::pair<int, int> next_checker_move(){
+    if(checker_index == 26){
+    }
+
+
+    checker_index++;
+}
+
 bool game_state::is_game_over()
 {
     return gameboard_instance->is_game_over();
