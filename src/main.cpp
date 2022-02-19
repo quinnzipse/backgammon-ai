@@ -51,37 +51,69 @@ public:
         checkers_on_bar = s1.checkers_on_bar;
     }
 
-    void update_state(int from, int to)
+    void update_state(int from, int to, int actor)
     {
-        int actor = board[from].second;
+        assert(actor == ACTOR::WHITE || actor == ACTOR::BLACK);
 
-        // Remove a checker from the designated place.
-        assert(board[from].first);
-
-        board[from].first--;
-
-        if (board[from].first == 0)
-            board[from].second = ACTOR::NONE;
-
-        // Place the checker in the designated place.
-        if (board[to].second != actor)
+        if (from == -1)
         {
-            if (board[to].first == 0)
+            assert(checkers_on_bar[actor - 1]);
+
+            checkers_on_bar[actor - 1]--;
+
+            if (board[to].first)
             {
-                assert(board[to].second == ACTOR::NONE);
-                board[to].first++;
+                if (actor == board[to].second)
+                {
+                    board[to].first++;
+                }
+                else
+                {
+                    assert(board[to].first == 1);
+
+                    checkers_on_bar[board[to].second - 1]++;
+                    board[to].second = actor;
+                }
             }
             else
             {
-                assert(board[to].first == 1);
-                checkers_on_bar[(actor == ACTOR::WHITE ? 0 : 1)]++; // move to the bar.
+                board[to].second = actor;
+                board[to].first++;
             }
-
-            board[to].second = actor;
         }
         else
         {
-            board[to].first++;
+            // No checkers of this color are on the BAR.
+            int actor = board[from].second;
+
+            // Remove a checker from the designated place.
+            assert(board[from].first);
+
+            board[from].first--;
+
+            if (board[from].first == 0)
+                board[from].second = ACTOR::NONE;
+
+            // Place the checker in the designated place.
+            if (board[to].second != actor)
+            {
+                if (board[to].first == 0)
+                {
+                    assert(board[to].second == ACTOR::NONE);
+                    board[to].first++;
+                }
+                else
+                {
+                    assert(board[to].first == 1);
+                    checkers_on_bar[(actor == ACTOR::WHITE ? 0 : 1)]++; // move to the bar.
+                }
+
+                board[to].second = actor;
+            }
+            else
+            {
+                board[to].first++;
+            }
         }
     }
 
@@ -224,30 +256,58 @@ class moves
     state s;
     ACTOR actor;
 
+    // Used if there are checkers on the bar
+    int lower_bound, upper_bound;
+    int bar_index;
+
 public:
-    moves(int dice_roll, ACTOR actor, state &s) : move_index(0), move_step(1), spaces_to_move(dice_roll), s(s), actor(actor)
+    moves(int dice_roll, ACTOR actor, state &s) : move_index(1), move_step(1), spaces_to_move(dice_roll), s(s), actor(actor), lower_bound(0), upper_bound(7)
     {
+        assert(actor == ACTOR::WHITE || actor == ACTOR::BLACK);
+
+        bar_index = actor - 1;
+
         if (actor == ACTOR::BLACK)
         {
-            move_index = NUMBER_OF_POINTS - 1; // FIXME: Might need to be -1...
             move_step = -1;
+            move_index = WHITE_BEAR_OFF_INDEX - 1;
+            lower_bound = WHITE_BEAR_OFF_INDEX - 7;
+            upper_bound = WHITE_BEAR_OFF_INDEX;
         }
     }
 
-    // FIXME: This doesn't fully check if there is a next move...
+    // NOTE: This doesn't fully check if there is a next move... Just does a range check.
     bool has_next_move()
     {
-        return 0 <= move_index && move_index <= NUMBER_OF_POINTS;
+        if (s.checkers_on_bar[bar_index] > 0)
+            return next_bar_move().second != -1;
+
+        return BLACK_BEAR_OFF_INDEX < move_index && move_index < WHITE_BEAR_OFF_INDEX;
     }
 
-    std::pair<int, int> next_move()
+    std::pair<int, int> next_bar_move()
     {
         std::pair<int, int> next_move = std::make_pair<int, int>(-1, -1);
 
-        assert(0 <= move_index && move_index <= NUMBER_OF_POINTS);
+        // Find the next move.
+        int to = (actor == ACTOR::WHITE ? lower_bound : upper_bound) + (move_step * spaces_to_move);
+
+        if (s.is_open(to, actor))
+        {
+            next_move.second = to;
+        }
+
+        return next_move;
+    }
+
+    std::pair<int, int> next_regular_move()
+    {
+        std::pair<int, int> next_move = std::make_pair<int, int>(-1, -1);
+
+        assert(BLACK_BEAR_OFF_INDEX < move_index && move_index < WHITE_BEAR_OFF_INDEX);
 
         // Find the next move.
-        while (0 <= move_index && move_index <= NUMBER_OF_POINTS)
+        while (BLACK_BEAR_OFF_INDEX < move_index && move_index < WHITE_BEAR_OFF_INDEX)
         {
             int to = move_index + (move_step * spaces_to_move);
 
@@ -267,14 +327,27 @@ public:
 
         return next_move;
     }
+
+    std::pair<int, int> next_move()
+    {
+        if (s.checkers_on_bar[bar_index] > 0)
+            return next_bar_move();
+        else
+            return next_regular_move();
+    }
 };
 
-int min(state s, int alpha, int beta);
+int min(state s, int alpha, int beta, int depth);
 
-int max(state s, int alpha, int beta)
+int max(state s, int alpha, int beta, int depth)
 {
     // Actor WHITE will always be moving
     // std::cout << s << alpha << beta << std::endl;
+
+    if (depth > 100)
+        return -100;
+
+    std::cout << depth << std::endl;
 
     // If game is over, return the utility for the current player and null as action.
     if (s.game_over())
@@ -299,7 +372,7 @@ int max(state s, int alpha, int beta)
 
             // Update state
             state intermediate_state = state(s);
-            intermediate_state.update_state(move.first, move.second);
+            intermediate_state.update_state(move.first, move.second, ACTOR::WHITE);
 
             moves m2 = moves(roll.second, ACTOR::WHITE, intermediate_state);
             while (m2.has_next_move())
@@ -310,13 +383,13 @@ int max(state s, int alpha, int beta)
 
                 // Update state
                 state next_state = state(intermediate_state);
-                next_state.update_state(move2.first, move2.second);
+                next_state.update_state(move2.first, move2.second, ACTOR::WHITE);
 
                 // std::cout << "Move: ( " << move.first << " -> " << move.second << " ) " << std::endl
-                        //   << " ( " << move2.first << " -> " << move2.second << " ) " << std::endl;
+                //   << " ( " << move2.first << " -> " << move2.second << " ) " << std::endl;
 
                 // Find the min value of that state.
-                int value = min(next_state, alpha, beta);
+                int value = min(next_state, alpha, beta, depth + 1);
 
                 // If the min value is greater than the max value, update the max value.
                 if (max_value_move.first < value)
@@ -349,7 +422,7 @@ int max(state s, int alpha, int beta)
 
             // Update state
             state intermediate_state = state(s);
-            intermediate_state.update_state(move.first, move.second);
+            intermediate_state.update_state(move.first, move.second, ACTOR::WHITE);
 
             moves m2 = moves(roll.first, ACTOR::WHITE, intermediate_state);
             while (m2.has_next_move())
@@ -360,10 +433,10 @@ int max(state s, int alpha, int beta)
 
                 // Update state
                 state next_state = state(intermediate_state);
-                next_state.update_state(move2.first, move2.second);
+                next_state.update_state(move2.first, move2.second, ACTOR::WHITE);
 
                 // Find the min value of that state.
-                int value = min(next_state, alpha, beta);
+                int value = min(next_state, alpha, beta, depth + 1);
 
                 // If the min value is greater than the max value, update the max value.
                 if (max_value_move.first < value)
@@ -390,13 +463,16 @@ int max(state s, int alpha, int beta)
     return max_value_move.first;
 }
 
-int min(state s, int alpha, int beta)
+int min(state s, int alpha, int beta, int depth)
 {
-    return -1;
-
     // Actor BLACK will always be moving
-    std::cout << "MIN:" << std::endl
-              << s << alpha << beta << std::endl;
+    // std::cout << "MIN:" << std::endl
+    //   << s << alpha << beta << std::endl;
+
+    if (depth > 100)
+        return -100;
+
+    std::cout << depth << std::endl;
 
     // If game is over, return the utility for the current player and null as action.
     if (s.game_over())
@@ -420,7 +496,7 @@ int min(state s, int alpha, int beta)
 
             // Update state
             state intermediate_state = state(s);
-            intermediate_state.update_state(move.first, move.second);
+            intermediate_state.update_state(move.first, move.second, ACTOR::BLACK);
 
             moves m2 = moves(roll.second, ACTOR::BLACK, intermediate_state);
             while (m2.has_next_move())
@@ -431,10 +507,10 @@ int min(state s, int alpha, int beta)
 
                 // Make a modified game state instance.
                 state next_state = state(intermediate_state);
-                next_state.update_state(move2.first, move2.second);
+                next_state.update_state(move2.first, move2.second, ACTOR::BLACK);
 
                 // Find the max value of that state.
-                int value = max(next_state, alpha, beta);
+                int value = max(next_state, alpha, beta, depth + 1);
 
                 // If the max value is less than the min value, update the min value.
                 if (value < min_value_move.first)
@@ -467,7 +543,7 @@ int min(state s, int alpha, int beta)
 
             // Update state
             state intermediate_state = state(s);
-            intermediate_state.update_state(move.first, move.second);
+            intermediate_state.update_state(move.first, move.second, ACTOR::BLACK);
 
             moves m2 = moves(roll.second, ACTOR::BLACK, intermediate_state);
             while (m2.has_next_move())
@@ -478,10 +554,10 @@ int min(state s, int alpha, int beta)
 
                 // Make a modified game state instance.
                 state next_state = state(intermediate_state);
-                next_state.update_state(move2.first, move2.second);
+                next_state.update_state(move2.first, move2.second, ACTOR::BLACK);
 
                 // Find the max value of that state.
-                int value = max(next_state, alpha, beta);
+                int value = max(next_state, alpha, beta, depth + 1);
 
                 // If the max value is less than the min value, update the min value.
                 if (value < min_value_move.first)
@@ -526,9 +602,9 @@ int main()
     int utility;
 
     if (color_of_actor == 1)
-        utility = max(game_state, -100000, 100000);
+        utility = max(game_state, -100000, 100000, 0);
     else
-        utility = min(game_state, -100000, 100000);
+        utility = min(game_state, -100000, 100000, 0);
 
     std::cout << "Best Outcome: " << utility << std::endl;
 }
