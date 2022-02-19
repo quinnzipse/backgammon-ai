@@ -28,6 +28,7 @@ public:
     std::pair<int, int> first_move;
     std::pair<int, int> second_move;
 
+    action() = default;
     action(const std::pair<int, int> &first_move, const std::pair<int, int> &second_move) : first_move(first_move), second_move(second_move) {}
 };
 
@@ -200,6 +201,7 @@ public:
         }
     }
 
+    // FIXME: This doesn't fully check if there is a next move...
     bool has_next_move()
     {
         return 0 <= move_index && move_index <= NUMBER_OF_POINTS;
@@ -252,7 +254,6 @@ int max(state s, int alpha, int beta)
         std::pair<int, int> roll = d.next_dice_roll();
 
         moves m = moves(roll.first, ACTOR::WHITE, s);
-
         while (m.has_next_move())
         {
             std::pair<int, int> move = m.next_move();
@@ -260,9 +261,10 @@ int max(state s, int alpha, int beta)
                 continue;
 
             // Update state
+            state intermediate_state = state(s);
+            intermediate_state.update_state(move.first, move.second);
 
-            // TODO: Use updated state
-            moves m2 = moves(roll.second, ACTOR::WHITE, s);
+            moves m2 = moves(roll.second, ACTOR::WHITE, intermediate_state);
             while (m2.has_next_move())
             {
                 std::pair<int, int> move2 = m2.next_move();
@@ -270,43 +272,82 @@ int max(state s, int alpha, int beta)
                     continue;
 
                 // Update state
+                state next_state = state(intermediate_state);
+                next_state.update_state(move2.first, move2.second);
 
                 // Find the min value of that state.
+                int value = min(next_state, alpha, beta);
+
                 // If the min value is greater than the max value, update the max value.
+                if (max_value_move.first < value)
+                {
+                    max_value_move.first = value;
+                    max_value_move.second = action(move, move2);
+                }
+
+                if (alpha < max_value_move.first)
+                {
+                    alpha = max_value_move.first;
+                }
+
                 // If the min value is more than beta, return immediately.
+                if (beta <= alpha)
+                {
+                    return max_value_move.first;
+                }
             }
         }
 
         // Can add a check to see if roll.first == roll.second (Swapping order wouldn't matter)
 
-        moves m = moves(roll.second, ACTOR::WHITE, s);
+        m = moves(roll.second, ACTOR::WHITE, s);
         while (m.has_next_move())
         {
             std::pair<int, int> move = m.next_move();
             if (move.first == -1)
-                break;
+                continue;
 
             // Update state
+            state intermediate_state = state(s);
+            intermediate_state.update_state(move.first, move.second);
 
-            // TODO: Use updated state
-            moves m2 = moves(roll.first, ACTOR::WHITE, s);
+            moves m2 = moves(roll.first, ACTOR::WHITE, intermediate_state);
             while (m2.has_next_move())
             {
                 std::pair<int, int> move2 = m2.next_move();
                 if (move2.first == -1)
-                    break;
+                    continue;
 
                 // Update state
+                state next_state = state(intermediate_state);
+                next_state.update_state(move2.first, move2.second);
 
                 // Find the min value of that state.
+                int value = min(next_state, alpha, beta);
+
                 // If the min value is greater than the max value, update the max value.
+                if (max_value_move.first < value)
+                {
+                    max_value_move.first = value;
+                    max_value_move.second = action(move, move2);
+                }
+
+                if (alpha < max_value_move.first)
+                {
+                    alpha = max_value_move.first;
+                }
+
                 // If the min value is more than beta, return immediately.
+                if (beta <= alpha)
+                {
+                    return max_value_move.first;
+                }
             }
         }
     }
 
     // Return the max value and the action.
-    return -1;
+    return max_value_move.first;
 }
 
 int min(state s, int alpha, int beta)
@@ -328,7 +369,6 @@ int min(state s, int alpha, int beta)
         std::pair<int, int> roll = d.next_dice_roll();
 
         moves m = moves(roll.first, ACTOR::BLACK, s);
-
         while (m.has_next_move())
         {
             std::pair<int, int> move = m.next_move();
@@ -336,9 +376,10 @@ int min(state s, int alpha, int beta)
                 continue;
 
             // Update state
+            state intermediate_state = state(s);
+            intermediate_state.update_state(move.first, move.second);
 
-            // TODO: Use updated state
-            moves m2 = moves(roll.second, ACTOR::BLACK, s);
+            moves m2 = moves(roll.second, ACTOR::BLACK, intermediate_state);
             while (m2.has_next_move())
             {
                 std::pair<int, int> move2 = m2.next_move();
@@ -346,43 +387,82 @@ int min(state s, int alpha, int beta)
                     continue;
 
                 // Make a modified game state instance.
+                state next_state = state(intermediate_state);
+                next_state.update_state(move2.first, move2.second);
+
                 // Find the max value of that state.
+                int value = max(next_state, alpha, beta);
+
                 // If the max value is less than the min value, update the min value.
+                if (value < min_value_move.first)
+                {
+                    min_value_move.first = value;
+                    min_value_move.second = action(move, move2);
+                }
+
+                if (min_value_move.first < beta)
+                {
+                    beta = min_value_move.first;
+                }
 
                 // If the max value is less than alpha, return immediately.
+                if (beta <= alpha)
+                {
+                    return min_value_move.first;
+                }
             }
         }
 
         // Can add a check to see if roll.first == roll.second (Swapping order wouldn't matter)
 
-        moves m = moves(roll.second, ACTOR::BLACK, s);
+        m = moves(roll.first, ACTOR::BLACK, s);
         while (m.has_next_move())
         {
             std::pair<int, int> move = m.next_move();
             if (move.first == -1)
-                break;
+                continue;
 
             // Update state
+            state intermediate_state = state(s);
+            intermediate_state.update_state(move.first, move.second);
 
-            // TODO: Use updated state
-            moves m2 = moves(roll.first, ACTOR::BLACK, s);
+            moves m2 = moves(roll.second, ACTOR::BLACK, intermediate_state);
             while (m2.has_next_move())
             {
                 std::pair<int, int> move2 = m2.next_move();
                 if (move2.first == -1)
-                    break;
+                    continue;
 
-                // Update state
+                // Make a modified game state instance.
+                state next_state = state(intermediate_state);
+                next_state.update_state(move2.first, move2.second);
 
-                // Find the min value of that state.
-                // If the min value is greater than the max value, update the max value.
-                // If the min value is more than beta, return immediately.
+                // Find the max value of that state.
+                int value = max(next_state, alpha, beta);
+
+                // If the max value is less than the min value, update the min value.
+                if (value < min_value_move.first)
+                {
+                    min_value_move.first = value;
+                    min_value_move.second = action(move, move2);
+                }
+
+                if (min_value_move.first < beta)
+                {
+                    beta = min_value_move.first;
+                }
+
+                // If the max value is less than alpha, return immediately.
+                if (beta <= alpha)
+                {
+                    return min_value_move.first;
+                }
             }
         }
     }
 
     // Return the min value and the action.
-    return -1;
+    return min_value_move.first;
 }
 
 int main()
