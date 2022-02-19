@@ -4,8 +4,9 @@
 #include <cassert>
 
 // In the test files the colors (aka actors) are 1 indexed.
-const enum ACTOR { WHITE = 0,
-                   BLACK = 1 };
+const enum ACTOR { NONE = 0,
+                   WHITE = 1,
+                   BLACK = 2 };
 
 const int NUMBER_OF_PLAYERS = 2;
 const int BLACK_BEAR_OFF_INDEX = 0;
@@ -23,6 +24,11 @@ int read_next_int_from_stream(std::istream &input_stream)
 
 class action
 {
+public:
+    std::pair<int, int> first_move;
+    std::pair<int, int> second_move;
+
+    action(const std::pair<int, int> &first_move, const std::pair<int, int> &second_move) : first_move(first_move), second_move(second_move) {}
 };
 
 class state
@@ -39,6 +45,40 @@ public:
         board = s1.board;
         dice_rolls = s1.dice_rolls;
         checkers_on_bar = s1.checkers_on_bar;
+    }
+
+    void update_state(int from, int to)
+    {
+        int actor = board[from].second;
+
+        // Remove a checker from the designated place.
+        assert(board[from].first);
+
+        board[from].first--;
+
+        if (board[from].first == 0)
+            board[from].second = ACTOR::NONE;
+
+        // Place the checker in the designated place.
+        if (board[to].second != actor)
+        {
+            if (board[to].first == 0)
+            {
+                assert(board[to].second == ACTOR::NONE);
+                board[to].first++;
+            }
+            else
+            {
+                assert(board[to].first == 1);
+                checkers_on_bar[(actor == ACTOR::WHITE ? 0 : 1)]++; // move to the bar.
+            }
+
+            board[to].second = actor;
+        }
+        else
+        {
+            board[to].first++;
+        }
     }
 
     bool game_over() const
