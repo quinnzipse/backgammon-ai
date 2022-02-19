@@ -102,30 +102,93 @@ public:
             output_state.dice_rolls.emplace_back(read_next_int_from_stream(input_stream));
     }
 
-    void generate_all_moves_for_white() const
-    {
-        std::vector<std::pair<int, int>> moves;
-        std::vector<int> dice_rolls = this->dice_rolls;
-
-        while (dice_rolls.size() > 0)
-        {
-            if (checkers_on_bar[ACTOR::WHITE] != 0)
-            {
-                // get the bar move
-                // check to see if it could move
-                
-            }
-            else
-            {
-
-            }
-        }
-    }
-
     // TODO: Does not recognize the constraints of bearing off.
     bool is_open(const int location, const ACTOR actor) const
     {
         return board[location].first <= 1 || board[location].second == actor;
+    }
+};
+
+class dice
+{
+    int dice_index;
+
+public:
+    dice() : dice_index(0)
+    {
+    }
+
+    bool has_next_roll()
+    {
+        return dice_index != 35;
+    }
+
+    std::pair<int, int> next_dice_roll()
+    {
+        std::pair<int, int> next_roll = std::make_pair<int, int>(0, 0);
+
+        if (dice_index == 35)
+        {
+            dice_index = 0;
+            return next_roll;
+        }
+
+        next_roll.first = (dice_index / 6) + 1;
+        next_roll.second = (dice_index % 6) + 1;
+
+        dice_index++;
+
+        return next_roll;
+    }
+};
+
+class moves
+{
+    int move_index;
+    int move_step;
+    int spaces_to_move;
+    state s;
+    ACTOR actor;
+
+public:
+    moves(int dice_roll, ACTOR actor, state &s) : move_index(0), move_step(1), spaces_to_move(dice_roll), s(s), actor(actor)
+    {
+        if (actor == ACTOR::BLACK)
+        {
+            move_index = NUMBER_OF_POINTS;
+            move_step = -1;
+        }
+    }
+
+    bool has_next_move()
+    {
+        return 0 <= move_index && move_index <= NUMBER_OF_POINTS;
+    }
+
+    std::pair<int, int> next_move()
+    {
+        std::pair<int, int> next_move = std::make_pair<int, int>(-1, -1);
+
+        // Find the next move.
+        while (0 <= move_index && move_index <= NUMBER_OF_POINTS)
+        {
+            int move_to_index = move_index + (move_step * spaces_to_move);
+
+            if (s.board[move_index].second == actor &&
+                s.is_open(move_to_index, actor))
+            {
+                next_move.first = move_index;
+                next_move.second = move_to_index;
+
+                break;
+            }
+
+            move_index += move_step;
+        }
+
+        move_index += move_step;
+
+        return next_move;
     }
 };
 
@@ -141,13 +204,65 @@ int max(state s, int alpha, int beta)
     std::pair<int, action> max_value_move = std::make_pair(-1000000, action());
 
     // Generate all possible moves.
-
-    // If game is not over, return the max of the min of the next moves.
+    // Since the game is not over, return the max of the min of the next moves.
     // for every possible action, find the min of the next moves.
+    dice d = dice();
+    while (d.has_next_roll())
     {
-        // Find the min value of that state.
-        // If the min value is greater than the max value, update the max value.
-        // If the min value is more than beta, return immediately.
+        std::pair<int, int> roll = d.next_dice_roll();
+
+        moves m = moves(roll.first, ACTOR::WHITE, s);
+
+        while (m.has_next_move())
+        {
+            std::pair<int, int> move = m.next_move();
+            if (move.first == -1)
+                continue;
+
+            // Update state
+
+            // TODO: Use updated state
+            moves m2 = moves(roll.second, ACTOR::WHITE, s);
+            while (m2.has_next_move())
+            {
+                std::pair<int, int> move2 = m2.next_move();
+                if (move2.first == -1)
+                    continue;
+
+                // Update state
+
+                // Find the min value of that state.
+                // If the min value is greater than the max value, update the max value.
+                // If the min value is more than beta, return immediately.
+            }
+        }
+
+        // Can add a check to see if roll.first == roll.second (Swapping order wouldn't matter)
+
+        moves m = moves(roll.second, ACTOR::WHITE, s);
+        while (m.has_next_move())
+        {
+            std::pair<int, int> move = m.next_move();
+            if (move.first == -1)
+                break;
+
+            // Update state
+
+            // TODO: Use updated state
+            moves m2 = moves(roll.first, ACTOR::WHITE, s);
+            while (m2.has_next_move())
+            {
+                std::pair<int, int> move2 = m2.next_move();
+                if (move2.first == -1)
+                    break;
+
+                // Update state
+
+                // Find the min value of that state.
+                // If the min value is greater than the max value, update the max value.
+                // If the min value is more than beta, return immediately.
+            }
+        }
     }
 
     // Return the max value and the action.
@@ -163,14 +278,67 @@ int min(state s, int alpha, int beta)
     if (s.game_over())
         return s.utility(); // TODO: Might need to multiply this by the depth.
 
-    // If game is not over, return the min of the max of the next moves.
-    // for every possible action, find the max of the next moves.
-    {
-        // Make a modified game state instance.
-        // Find the max value of that state.
-        // If the max value is less than the min value, update the min value.
+    std::pair<int, action> min_value_move = std::make_pair(1000000, action());
 
-        // If the max value is less than alpha, return immediately.
+    // Since the game is not over, return the min of the max of the next moves.
+    // for every possible action, find the max of the next moves.
+    dice d = dice();
+    while (d.has_next_roll())
+    {
+        std::pair<int, int> roll = d.next_dice_roll();
+
+        moves m = moves(roll.first, ACTOR::BLACK, s);
+
+        while (m.has_next_move())
+        {
+            std::pair<int, int> move = m.next_move();
+            if (move.first == -1)
+                continue;
+
+            // Update state
+
+            // TODO: Use updated state
+            moves m2 = moves(roll.second, ACTOR::BLACK, s);
+            while (m2.has_next_move())
+            {
+                std::pair<int, int> move2 = m2.next_move();
+                if (move2.first == -1)
+                    continue;
+
+                // Make a modified game state instance.
+                // Find the max value of that state.
+                // If the max value is less than the min value, update the min value.
+
+                // If the max value is less than alpha, return immediately.
+            }
+        }
+
+        // Can add a check to see if roll.first == roll.second (Swapping order wouldn't matter)
+
+        moves m = moves(roll.second, ACTOR::BLACK, s);
+        while (m.has_next_move())
+        {
+            std::pair<int, int> move = m.next_move();
+            if (move.first == -1)
+                break;
+
+            // Update state
+
+            // TODO: Use updated state
+            moves m2 = moves(roll.first, ACTOR::BLACK, s);
+            while (m2.has_next_move())
+            {
+                std::pair<int, int> move2 = m2.next_move();
+                if (move2.first == -1)
+                    break;
+
+                // Update state
+
+                // Find the min value of that state.
+                // If the min value is greater than the max value, update the max value.
+                // If the min value is more than beta, return immediately.
+            }
+        }
     }
 
     // Return the min value and the action.
