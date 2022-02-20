@@ -342,17 +342,14 @@ int min(state s, int alpha, int beta, int depth);
 int max(state s, int alpha, int beta, int depth)
 {
     // Actor WHITE will always be moving
-    // std::cout << s << alpha << beta << std::endl;
-
-    if (depth > 100)
-        return -100;
+    std::cout << s << alpha << beta << std::endl;
 
     std::cout << depth << std::endl;
 
     // If game is over, return the utility for the current player and null as action.
     if (s.game_over())
         return s.utility(); // TODO: Might need to multiply this by the depth.
-
+ 
     std::pair<int, action> max_value_move = std::make_pair(-1000000, action());
 
     // Generate all possible moves.
@@ -367,7 +364,7 @@ int max(state s, int alpha, int beta, int depth)
         while (m.has_next_move())
         {
             std::pair<int, int> move = m.next_move();
-            if (move.first == -1)
+            if (move.second == -1)
                 continue;
 
             // Update state
@@ -378,7 +375,7 @@ int max(state s, int alpha, int beta, int depth)
             while (m2.has_next_move())
             {
                 std::pair<int, int> move2 = m2.next_move();
-                if (move2.first == -1)
+                if (move2.second == -1)
                     continue;
 
                 // Update state
@@ -417,7 +414,7 @@ int max(state s, int alpha, int beta, int depth)
         while (m.has_next_move())
         {
             std::pair<int, int> move = m.next_move();
-            if (move.first == -1)
+            if (move.second == -1)
                 continue;
 
             // Update state
@@ -428,7 +425,7 @@ int max(state s, int alpha, int beta, int depth)
             while (m2.has_next_move())
             {
                 std::pair<int, int> move2 = m2.next_move();
-                if (move2.first == -1)
+                if (move2.second == -1)
                     continue;
 
                 // Update state
@@ -466,11 +463,8 @@ int max(state s, int alpha, int beta, int depth)
 int min(state s, int alpha, int beta, int depth)
 {
     // Actor BLACK will always be moving
-    // std::cout << "MIN:" << std::endl
-    //   << s << alpha << beta << std::endl;
-
-    if (depth > 100)
-        return -100;
+    std::cout << "MIN:" << std::endl
+      << s << alpha << beta << std::endl;
 
     std::cout << depth << std::endl;
 
