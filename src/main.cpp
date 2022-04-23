@@ -65,10 +65,12 @@ public:
             {
                 if (actor == board[to].second)
                 {
+                    std::cout << "From bar to prev held loc" << std::endl;
                     board[to].first++;
                 }
                 else
                 {
+                    std::cout << "From bar to knocking opp" << std::endl;
                     assert(board[to].first == 1);
 
                     checkers_on_bar[board[to].second - 1]++;
@@ -77,6 +79,7 @@ public:
             }
             else
             {
+                std::cout << "From bar to new loc" << std::endl;
                 board[to].second = actor;
                 board[to].first++;
             }
@@ -84,11 +87,12 @@ public:
         else
         {
             // No checkers of this color are on the BAR.
-            int actor = board[from].second;
+            int actor_actual = board[from].second;
+
+            // Ensure that we are in a legal state. (IE there is a checker to remove from loc and actors line up)
+            assert(board[from].first && actor == actor_actual);
 
             // Remove a checker from the designated place.
-            assert(board[from].first);
-
             board[from].first--;
 
             if (board[from].first == 0)
@@ -99,11 +103,13 @@ public:
             {
                 if (board[to].first == 0)
                 {
+                    std::cout << "Moved a checker in a new spot" << std::endl;
                     assert(board[to].second == ACTOR::NONE);
                     board[to].first++;
                 }
                 else
                 {
+                    std::cout << "Moved checker and knocked opp to bar" << std::endl;
                     assert(board[to].first == 1);
                     checkers_on_bar[(actor == ACTOR::WHITE ? 0 : 1)]++; // move to the bar.
                 }
@@ -112,6 +118,7 @@ public:
             }
             else
             {
+                std::cout << "Moved a checker to an existing spot" << std::endl;
                 board[to].first++;
             }
         }
@@ -136,8 +143,8 @@ public:
             std::cout << point.first << " " << point.second << std::endl;
         }
 
-        std::cout << state.checkers_on_bar[ACTOR::WHITE] << std::endl
-                  << state.checkers_on_bar[ACTOR::BLACK] << std::endl;
+        std::cout << "BAR W: " << state.checkers_on_bar[ACTOR::WHITE] << std::endl
+                  << "BAR B: " << state.checkers_on_bar[ACTOR::BLACK] << std::endl;
 
         std::cout << state.dice_rolls.size() << std::endl;
 
@@ -311,6 +318,11 @@ public:
         {
             int to = move_index + (move_step * spaces_to_move);
 
+            if (to < BLACK_BEAR_OFF_INDEX)
+                to = BLACK_BEAR_OFF_INDEX;
+            else if (to > WHITE_BEAR_OFF_INDEX)
+                to = WHITE_BEAR_OFF_INDEX;
+
             if (s.board[move_index].second == actor &&
                 s.is_open(to, actor))
             {
@@ -349,7 +361,7 @@ int max(state s, int alpha, int beta, int depth)
     // If game is over, return the utility for the current player and null as action.
     if (s.game_over())
         return s.utility(); // TODO: Might need to multiply this by the depth.
- 
+
     std::pair<int, action> max_value_move = std::make_pair(-1000000, action());
 
     // Generate all possible moves.
@@ -464,7 +476,7 @@ int min(state s, int alpha, int beta, int depth)
 {
     // Actor BLACK will always be moving
     std::cout << "MIN:" << std::endl
-      << s << alpha << beta << std::endl;
+              << s << alpha << beta << std::endl;
 
     std::cout << depth << std::endl;
 
@@ -485,7 +497,7 @@ int min(state s, int alpha, int beta, int depth)
         while (m.has_next_move())
         {
             std::pair<int, int> move = m.next_move();
-            if (move.first == -1)
+            if (move.second == -1)
                 continue;
 
             // Update state
@@ -496,7 +508,7 @@ int min(state s, int alpha, int beta, int depth)
             while (m2.has_next_move())
             {
                 std::pair<int, int> move2 = m2.next_move();
-                if (move2.first == -1)
+                if (move2.second == -1)
                     continue;
 
                 // Make a modified game state instance.
@@ -532,7 +544,7 @@ int min(state s, int alpha, int beta, int depth)
         while (m1.has_next_move())
         {
             std::pair<int, int> move = m1.next_move();
-            if (move.first == -1)
+            if (move.second == -1)
                 continue;
 
             // Update state
@@ -543,7 +555,7 @@ int min(state s, int alpha, int beta, int depth)
             while (m2.has_next_move())
             {
                 std::pair<int, int> move2 = m2.next_move();
-                if (move2.first == -1)
+                if (move2.second == -1)
                     continue;
 
                 // Make a modified game state instance.
